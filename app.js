@@ -11,9 +11,7 @@ app.get('/', function(req, res) {
 });
 
 http.listen(port, function() {
-    console.log('listening on *: ' + port);
-    console.log(process.env.ParticleDeviceId + " " + process.env.ParticleAccessToken);
-    
+    console.log('listening on *: ' + port);   
 });
 
 spark.on('login', function() {
