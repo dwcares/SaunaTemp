@@ -1,0 +1,9 @@
+{
+  "name": "SaunaTemp",
+  "version": "0.0.1",
+  "description": "Temp viewer",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.10.2"
+  }
+}
