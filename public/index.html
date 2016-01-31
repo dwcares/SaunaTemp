@@ -4,20 +4,14 @@
     <link rel="shortcut icon" href="favicon.ico">
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=320">
     <style type="text/css">   
-       body.offline {
-            background-image: url('612sauna.jpg');
-            background-size: 265px 265px;
-            background-position: center center;
-            background-repeat: no-repeat;
-       }
-       body.offline .gauge {
-            opacity: 0;
-        } 
-        
         .gauge {
-            position: absolute;
-            top: calc(50% - 100px);
-            left: calc(50% - 100px);
+           
+        }
+        
+        .updatedLabel {
+            font-size: 9pt;
+            color: lightgray;
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
         }
        
     </style>
@@ -26,7 +20,7 @@
     <script src="socket.io-1.2.0.js"></script>
   </head>
 
-  <body class="offline">      
+  <body>      
     <div class="gauge" style="text-align:center">
         <input type="text" 
         	   class="dial" 
@@ -37,31 +31,52 @@
         	   data-angleOffset=270 
         	   data-angleArc=180 
         	   data-width=200 
-        	   data-height=200
+        	   data-height=140
 			   data-thickness=.3
                data-readonly=true
 			   rotation="anticlockwise"/>
+    <div class="updatedLabel"><span class="lastUpdatedTime"></span></div>
     </div>
     <script>
       
        $(".dial").knob({
            format: function(val) {
-               return val + "°F";
+               if (val > 0 ) {
+                    return val + "°F";
+               } else {
+                   return "";
+               }
            }
        });
        
       var socket = io();
       socket.on('tempf', function (msg) {
-         $('.dial').val(msg).trigger('change');
-         $('body').removeClass('offline');
-      });
-      
-      socket.on('devicestatus', function (msg) {
-         if (msg === "offline") {
-            $('body').addClass('offline'); 
+         $('.dial').val(msg.tempf).trigger('change');
+         
+         if (msg.updated && msg.tempf > 0) {
+            $('.lastUpdatedTime').text(formatDate(msg.updated));
          }
       });
       
+     function formatDate(utc) {
+        var updatedDate = new Date(utc);
+       
+        var hours = updatedDate.getHours();
+        var minutes = updatedDate.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0'+minutes : minutes;
+        var timeString = hours + ':' + minutes + ' ' + ampm;
+        var dateString = updatedDate.toDateString();
+        
+        if (new Date().getDate() !== updatedDate.getDate()) {
+            timeString = dateString + " " + timeString;
+        }
+        
+        return timeString;
+     }
+     
     </script>
   </body>
 </html>
