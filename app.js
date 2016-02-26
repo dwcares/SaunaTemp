@@ -7,6 +7,7 @@ var port = process.env.PORT || 3000;
 var spark = require('spark');
 var lastPublish;
 var lastTemp;
+var tempSensorDevice;
 
 app.get('/', function(req, res) {
  res.sendFile(__dirname + '/public/index.html');
@@ -24,22 +25,17 @@ spark.on('login', function() {
             return;
         }
         
+        tempSensorDevice = device;
         console.log("Device connected: "  + device.connected);
         
-        device.getVariable('tempf', function(err, data) {
-            if (err) {
-                console.log("Error getting initial temp: " + err);
-                return;
-            }
-        
-            console.log("Current temp: " + data.result);
-            lastTemp = data.result;
-        });
+        forceRefresh();
     });
     
     io.on('connection', function(socket){
         console.log('a user connected');
-        socket.emit('tempf', {tempf: lastTemp, updated: lastPublish});    
+        socket.on('tryrefresh', forceRefresh);
+        
+        publish();  
     });
     
     spark.getEventStream('tempf', process.env.ParticleDeviceId, function(msg) {
@@ -49,9 +45,30 @@ spark.on('login', function() {
             lastTemp = msg.data;
             lastPublish = Date.now();
             
-            io.emit('tempf',  {tempf: lastTemp, updated: lastPublish});    
+            publish();
         }   
     });
+    
+    function forceRefresh () {
+            if (!tempSensorDevice) return;
+                
+            tempSensorDevice.getVariable('tempf', function(err, data) {
+                if (err) {
+                    console.log("Error getting temp: " + err);
+                    return;
+                }
+    
+                console.log("Current temp: " + data.result);
+                lastTemp = data.result;
+                lastPublish = Date.now();
+                
+                publish();
+            });
+    }
+    
+    function publish() {
+        io.emit('tempf',  {tempf: lastTemp, updated: lastPublish});    
+    }
 });
 
 spark.login({ accessToken: process.env.ParticleAccessToken });

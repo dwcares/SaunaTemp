@@ -38,6 +38,8 @@
     <div class="updatedLabel"><span class="lastUpdatedTime"></span></div>
     </div>
     <script>
+       
+       var socket = io();
       
        $(".dial").knob({
            format: function(val) {
@@ -49,7 +51,10 @@
            }
        });
        
-      var socket = io();
+       $(".gauge").on( "dblclick", function( event ) { 
+           socket.emit("tryrefresh");
+       } );
+       
       socket.on('tempf', function (msg) {
          $('.dial').val(msg.tempf).trigger('change');
          
