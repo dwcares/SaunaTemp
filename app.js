@@ -67,7 +67,10 @@ spark.on('login', function() {
     }
     
     function publish() {
-        io.emit('tempf',  {tempf: lastTemp, updated: lastPublish});    
+        
+        if (lastTemp) {
+            io.emit('tempf',  {tempf: lastTemp, updated: lastPublish});    
+        }
     }
 });
 
