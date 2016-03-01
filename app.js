@@ -9,6 +9,12 @@ var lastPublish;
 var lastTemp;
 var tempSensorDevice;
 
+var pub = require('redis').createClient(6379, process.env.REDISName, {auth_pass: process.env.REDISKey, return_buffers: true});
+var sub = require('redis').createClient(6379, process.env.REDISName, {auth_pass: process.env.REDISKey, return_buffers: true});
+
+var redis = require('socket.io-redis');
+io.adapter(redis({pubClient: pub, subClient: sub}));
+
 app.get('/', function(req, res) {
  res.sendFile(__dirname + '/public/index.html');
 });
@@ -16,6 +22,10 @@ app.get('/', function(req, res) {
 http.listen(port, function() {
     console.log('listening on *: ' + port);   
 });
+
+io.on('error' , function(e) {
+    console.log(e);
+})
 
 spark.on('login', function() {
     
