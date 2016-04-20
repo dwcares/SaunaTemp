@@ -9,12 +9,6 @@ var lastPublish;
 var lastTemp;
 var tempSensorDevice;
 
-var pub = require('redis').createClient(6379, process.env.REDISName, {auth_pass: process.env.REDISKey, return_buffers: true});
-var sub = require('redis').createClient(6379, process.env.REDISName, {auth_pass: process.env.REDISKey, return_buffers: true});
-
-var redis = require('socket.io-redis');
-io.adapter(redis({pubClient: pub, subClient: sub}));
-
 app.get('/', function(req, res) {
  res.sendFile(__dirname + '/public/index.html');
 });
@@ -29,7 +23,7 @@ io.on('error' , function(e) {
 
 spark.on('login', function() {
     
-    spark.getDevice(process.env.ParticleDeviceId, function(err, device) {
+    spark.getDevice(process.env.ParticleDeviceIdPhoton, function(err, device) {
         if (err) {
             console.log("Error getting device: " + err);
             return;
@@ -48,7 +42,7 @@ spark.on('login', function() {
         publish();  
     });
     
-    spark.getEventStream('tempf', process.env.ParticleDeviceId, function(msg) {
+    spark.getEventStream('tempf', process.env.ParticleDeviceIdPhoton, function(msg) {
         if (msg) {
             console.log("Event: " +msg.name +":" + msg.data);
             
